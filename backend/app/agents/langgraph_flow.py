@@ -22,6 +22,7 @@ class WorkflowState(TypedDict):
     decision: str
     rationale: str
     citations: List[Citation]
+    risk_level: str
 
 
 def _retrieve(state: WorkflowState, store: VectorStore) -> WorkflowState:
@@ -30,12 +31,15 @@ def _retrieve(state: WorkflowState, store: VectorStore) -> WorkflowState:
 
 
 def _analyze(state: WorkflowState) -> WorkflowState:
-    decision, rationale, citations = analyze_claim(state["request"], state["retrieved"])
+    decision, rationale, citations, risk_level = analyze_claim(
+        state["request"], state["retrieved"]
+    )
     return {
         **state,
         "decision": decision,
         "rationale": rationale,
         "citations": citations,
+        "risk_level": risk_level,
     }
 
 
@@ -64,6 +68,7 @@ def run_langgraph(store: VectorStore, request: AnalysisRequest) -> AnalysisRespo
         "decision": "needs-review",
         "rationale": "",
         "citations": [],
+        "risk_level": "medium",
     }
 
     final_state = compiled.invoke(initial_state)
@@ -72,4 +77,5 @@ def run_langgraph(store: VectorStore, request: AnalysisRequest) -> AnalysisRespo
         decision=final_state["decision"],
         rationale=final_state["rationale"],
         citations=final_state["citations"],
+        risk_level=final_state["risk_level"],
     )
