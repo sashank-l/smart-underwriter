@@ -13,15 +13,21 @@ logger = logging.getLogger(__name__)
 _model = None
 
 def get_model():
-    """Lazy load the sentence transformer model."""
+    """Lazy load the fastembed model."""
     global _model
     if _model is None:
         try:
-            from sentence_transformers import SentenceTransformer
-            logger.info(f"Loading embedding model: {settings.embeddings_model}")
-            _model = SentenceTransformer(settings.embeddings_model)
+            from fastembed import TextEmbedding
+            # FastEmbed uses slightly different model names, but "BAAI/bge-small-en-v1.5" or similar are good.
+            # "sentence-transformers/all-MiniLM-L6-v2" is also supported by FastEmbed as "QA/all-MiniLM-L6-v2" or similar mappings.
+            # We'll use the default or a specific compatible one.
+            # For simplicity and compatibility, let's use a very standard one supported by fastembed.
+            # "BAAI/bge-small-en-v1.5" is great, but let's stick to what we had if possible, or close to it.
+            # FastEmbed defaults to "BAAI/bge-small-en-v1.5" which is 384 dim, same as all-MiniLM-L6-v2.
+            logger.info(f"Loading embedding model (FastEmbed): {settings.embeddings_model}")
+            _model = TextEmbedding(model_name=settings.embeddings_model)
         except ImportError:
-            logger.error("sentence-transformers not installed. Please install it with: pip install sentence-transformers")
+            logger.error("fastembed not installed. Please install it with: pip install fastembed")
             raise
     return _model
 
@@ -36,13 +42,13 @@ def _hash_to_vector(text: str, dim: int = 8) -> List[float]:
 def embed_texts(texts: List[str]) -> List[List[float]]:
     """
     Generate embeddings for a list of texts.
-    Supports 'sentence-transformers' (semantic) and 'hash' (deterministic/random).
+    Supports 'sentence-transformers' (mapped to FastEmbed) and 'hash' (deterministic/random).
     """
     if settings.embeddings_provider == "sentence-transformers":
         model = get_model()
-        embeddings = model.encode(texts)
-        # Convert numpy arrays to lists
-        return [e.tolist() for e in embeddings]
+        # FastEmbed returns a generator of numpy arrays
+        embeddings_generator = model.embed(texts)
+        return [e.tolist() for e in embeddings_generator]
     
     # Fallback/Legacy hash embeddings
     dim = max(1, int(settings.embeddings_dim))
