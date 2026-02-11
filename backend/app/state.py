@@ -6,7 +6,6 @@ from app.schemas.models import PolicySummary
 
 from app.config import settings
 from app.vectorstores.in_memory import InMemoryVectorStore
-from app.vectorstores.chroma import ChromaVectorStore
 from app.vectorstores.pinecone import PineconeVectorStore
 from app.vectorstores.base import VectorStore
 
@@ -18,8 +17,6 @@ POLICY_REGISTRY: Dict[str, PolicySummary] = {}
 
 def _build_store() -> VectorStore:
     match settings.vector_store:
-        case "chroma":
-            return ChromaVectorStore()
         case "pinecone":
             return PineconeVectorStore(namespace=None)
         case _:
