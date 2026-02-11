@@ -35,6 +35,11 @@ async def health() -> dict:
     return {"status": "ok"}
 
 
+@app.get("/")
+async def root() -> dict:
+    return {"message": "Smart Underwriter API Running"}
+
+
 @app.post("/ingest", response_model=IngestResponse)
 async def ingest_policy(
     policy_id: str,
