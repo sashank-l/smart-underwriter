@@ -6,6 +6,8 @@ python-multipart==0.0.9
 PyMuPDF==1.24.10
 groq==0.13.0
 langgraph==0.2.45
-chromadb==0.5.5
+# CPU-only PyTorch (Save space for Render)
+torch --index-url https://download.pytorch.org/whl/cpu
 pinecone-client==5.0.1
 sentence-transformers==2.7.0
+
